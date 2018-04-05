@@ -2,11 +2,28 @@ set myName to "Mac Outlook Archive"
 set mailName to "Microsoft Outlook"
 set inboxName to "Inbox"
 set archiveName to "Archive"
-set debug to false
+set debug to true
 
 tell application "Microsoft Outlook"
 	set frontWin to front window
 	set winName to name of frontWin
+
+	set frontWinView to null
+	try
+		set frontWinView to view of frontWin
+	on error errorMessage number errorNumber
+		if debug then
+			display notification ("Window \"" & winName & "\" is not a Main Window") with title "No messages selected"
+		end if
+		return 0
+	end try
+	if frontWinView is not "mail view" then
+		if debug then
+			display notification ("Window \"" & winName & "\" does not have email open") with title "No messages selected"
+		end if
+		return 0
+	end if
+
 	set currMsgs to current messages
 	if currMsgs = {} then
 		if debug then
@@ -39,7 +56,8 @@ tell application "Microsoft Outlook"
 		try
 			set destFolder to folder archiveName of theInbox
 		on error errorMessage number errorNumber
-			display alert ("Archive folder not found: " & archiveName) message (errorMessage & "\nError number: " & errorNumber) as critical
+			display alert ("Archive folder not found: " & archiveName) message (errorMessage & "
+Error number: " & errorNumber) as critical
 			return 0
 		end try
 	end if
@@ -50,7 +68,8 @@ tell application "Microsoft Outlook"
 			move theMessage to destFolder
 		end repeat
 	on error errorMessage number errorNumber
-		display alert "Archiving failed" message (errorMessage & "\nError number: " & errorNumber) as critical
+		display alert "Archiving failed" message (errorMessage & "
+Error number: " & errorNumber) as critical
 		return 0
 	end try
 
